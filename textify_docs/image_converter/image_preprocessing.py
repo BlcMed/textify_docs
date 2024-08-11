@@ -1,6 +1,34 @@
 import cv2 as cv 
 import numpy as np
 
+
+#Basic printed document processing
+def preprocess_image(image,
+                    grey=1,
+                    threshold=180,
+                    adapt=0,
+                    blur=0,
+                    thresh=0,
+                    sharp=0,
+                    edge_cascade=0,
+                    edge1=50,
+                    edge2=200):
+
+    newImg=image
+    if grey:
+        newImg=Grey(newImg)
+    if edge_cascade:
+        newImg=EdgeCascade(newImg,edge1,edge2)
+    if blur:
+        newImg=Blur(newImg)
+    if thresh:
+        newImg=Threshold(newImg,threshold)
+    if adapt:
+        newImg=adaptiveThreshold(newImg)
+    if sharp:
+        newImg=Sharpen(newImg)
+    return newImg
+
 #Rescaling images
 def Rescale(img,dim_height=1280,dim_width=720):
     height_scale=dim_height/img.shape[0]
@@ -46,30 +74,3 @@ kernel_sharp=np.array([[0,-1, 0],
 
 def Sharpen(img,kernel_sharp=kernel_sharp):
     return cv.filter2D(img,-1,kernel_sharp)
-
-#Basic printed document processing
-def preprocess_image(image,
-                    grey=1,
-                    threshold=180,
-                    adapt=0,
-                    blur=0,
-                    thresh=0,
-                    sharp=0,
-                    edge_cascade=0,
-                    edge1=50,
-                    edge2=200):
-
-    newImg=image
-    if grey:
-        newImg=Grey(newImg)
-    if edge_cascade:
-        newImg=EdgeCascade(newImg,edge1,edge2)
-    if blur:
-        newImg=Blur(newImg)
-    if thresh:
-        newImg=Threshold(newImg,threshold)
-    if adapt:
-        newImg=adaptiveThreshold(newImg)
-    if sharp:
-        newImg=Sharpen(newImg)
-    return newImg
