@@ -5,6 +5,40 @@ import pytesseract
 import numpy as np
 
 class ImageConverter(BaseConverter):
+
+    def convert_to_text(self):
+        """
+        Convert the image file to plain text using OCR after preprocessing.
+
+        :return: A string containing the plain text extracted from the image.
+        """
+        try:
+            # Open the image file
+            with Image.open(self.file_path) as img:
+                text = self.convert_to_text_from_image(img)
+            return text
+        
+        except Exception as e:
+            print(f"An error occurred while converting the image file: {e}")
+            return None
+
+    def convert_to_text_from_image(self, img):
+        """
+        Convert the given image (in PIL format) to plain text using OCR.
+        
+        :param img: The preprocessed image in PIL format.
+        :return: A string containing the plain text extracted from the image.
+        """
+        try:
+            preprocessed_img = self.preprocess_image(img)
+            # OCR with tesseract
+            text = pytesseract.image_to_string(preprocessed_img)
+            return text
+        
+        except Exception as e:
+            print(f"An error occurred while converting the image to text: {e}")
+            return None
+
     def preprocess_image(self, img):
         """
         Preprocess the image using OpenCV functions.
@@ -72,21 +106,3 @@ class ImageConverter(BaseConverter):
 
     def _sharpen(self, img, kernel_sharp=np.array([[0, -1, 0], [-1, 5, -1], [0, -1, 0]])):
         return cv.filter2D(img, -1, kernel_sharp)
-
-    def convert_to_text(self):
-        """
-        Convert the image file to plain text using OCR after preprocessing.
-
-        :return: A string containing the plain text extracted from the image.
-        """
-        try:
-            # Open the image file
-            with Image.open(self.file_path) as img:
-                preprocessed_img = self.preprocess_image(img)
-                # OCR with tesseract
-                text = pytesseract.image_to_string(preprocessed_img)
-            return text
-        
-        except Exception as e:
-            print(f"An error occurred while converting the image file: {e}")
-            return None
