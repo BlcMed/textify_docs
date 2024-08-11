@@ -1,5 +1,4 @@
-from ..base import BaseConverter
-from .image_preprocessing import preprocess_image
+from .base import BaseConverter
 import cv2 as cv
 from PIL import Image
 import pytesseract
