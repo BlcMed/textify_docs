@@ -1,8 +1,11 @@
 from transformers import DetrFeatureExtractor, TableTransformerForObjectDetection
 import torch
+from .utils import outputs_to_objects
 
 #load model
 model = TableTransformerForObjectDetection.from_pretrained("microsoft/table-transformer-detection")
+id2label = model.config.id2label
+id2label[len(model.config.id2label)] = "no object"
 
 # Constants
 DETECTION_CLASS_THRESHOLDS = {
@@ -20,12 +23,11 @@ def detect_tables(image):
     with torch.no_grad():
         outputs = model(**encoding)
     
-    id2label = model.config.id2label
-    id2label[len(model.config.id2label)] = "no object"
     objects = outputs_to_objects(outputs, size, id2label)
     
     tables = objects_to_crops(image, objects, DETECTION_CLASS_THRESHOLDS, PADDING=PADDING)
-    tables = [table['image'].convert("RGB") for table in tables]
+    #tables = [table['image'].convert("RGB") for table in tables]
+    tables = [table.convert("RGB") for table in tables]
     return tables
 
 
@@ -34,16 +36,18 @@ def objects_to_crops(img, objects, class_thresholds, padding=10):
     for obj in objects:
         if obj['score'] < class_thresholds[obj['label']]:
             continue
-        cropped_table = {}
+        #cropped_table = {}
         bbox = obj['bbox']
         bbox = [bbox[0]-padding, bbox[1]-padding, bbox[2]+padding, bbox[3]+padding]
         cropped_img = img.crop(bbox)
         if obj['label'] == 'table rotated':
             cropped_img = cropped_img.rotate(270, expand=True)
-        cropped_table['image'] = cropped_img
-        table_crops.append(cropped_table)
+        #cropped_table['image'] = cropped_img
+        #table_crops.append(cropped_table)
+        table_crops.append(cropped_img)
     return table_crops
 
+'''
 def outputs_to_objects(outputs, img_size, id2label):
     m = outputs.logits.softmax(-1).max(-1)
     pred_labels = list(m.indices.detach().cpu().numpy())[0]
@@ -68,4 +72,4 @@ def rescale_bboxes(out_bbox, size):
     b = box_cxcywh_to_xyxy(out_bbox)
     b = b * torch.tensor([img_w, img_h, img_w, img_h], dtype=torch.float32)
     return b
-#
+'''
