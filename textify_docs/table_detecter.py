@@ -1,6 +1,7 @@
 from transformers import DetrFeatureExtractor, TableTransformerForObjectDetection
+from torchvision import transforms
 import torch
-from .utils import outputs_to_objects
+from utils import *
 
 #load model
 model = TableTransformerForObjectDetection.from_pretrained("microsoft/table-transformer-detection")
@@ -14,18 +15,26 @@ DETECTION_CLASS_THRESHOLDS = {
     "no object": 10
 }
 PADDING = 10 
+detection_transform = transforms.Compose([
+    MaxResize(800),
+    transforms.ToTensor(),
+    transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+])
 
 def detect_tables(image):
     size = image.size
     tables=[]
-    feature_extractor = DetrFeatureExtractor()
-    encoding = feature_extractor(image, return_tensors="pt")
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    model.to(device)
+    pixel_values = detection_transform(image)
+    pixel_values = detection_transform(image).unsqueeze(0)
+    pixel_values = pixel_values.to(device)
     with torch.no_grad():
-        outputs = model(**encoding)
+        outputs = model(pixel_values)
     
     objects = outputs_to_objects(outputs, size, id2label)
     
-    tables = objects_to_crops(image, objects, DETECTION_CLASS_THRESHOLDS, PADDING=PADDING)
+    tables = objects_to_crops(image, objects, DETECTION_CLASS_THRESHOLDS, padding=PADDING)
     #tables = [table['image'].convert("RGB") for table in tables]
     tables = [table.convert("RGB") for table in tables]
     return tables

@@ -1,21 +1,11 @@
 from transformers import TableTransformerForObjectDetection
 from torchvision import transforms
 import torch
-from .utils import *
+from utils import *
 
 structure_model = TableTransformerForObjectDetection.from_pretrained("microsoft/table-structure-recognition-v1.1-all")
 structure_id2label = structure_model.config.id2label
 structure_id2label[len(structure_id2label)] = "no object"
-
-class MaxResize(object):
-    def __init__(self, max_size=800):
-        self.max_size = max_size
-    def __call__(self, image):
-        width, height = image.size
-        current_max_size = max(width, height)
-        scale = self.max_size / current_max_size
-        resized_image = image.resize((int(round(scale*width)), int(round(scale*height))))
-        return resized_image
 
 structure_transform = transforms.Compose([
     MaxResize(1000),

@@ -11,17 +11,17 @@ def extract_from_image(image):
     tables=[]
     for table_image in tables_images:
         cells_coordinates = recognize_table(table_image=table_image)
-        table = _extract_table_data_from_cells(cells_coordinates)
+        table = _extract_table_data_from_cells(cells_coordinates=cells_coordinates,table_image=table_image)
         tables.append(table)
 
     return tables
 
-def _extract_table_data_from_cells(cell_coordinates, table_image, progress_callback=None):
+def _extract_table_data_from_cells(cells_coordinates, table_image, progress_callback=None):
     data = dict()
     max_num_columns = 0
-    total_rows = len(cell_coordinates)
+    total_rows = len(cells_coordinates)
     
-    for idx, row in enumerate(cell_coordinates):
+    for idx, row in enumerate(cells_coordinates):
         if progress_callback:
             progress_callback(idx, total_rows)
         
@@ -52,5 +52,6 @@ def _extract_table_data_from_cells(cell_coordinates, table_image, progress_callb
     return data
 
 if __name__ == "__main__":
-    image = Image.open("../documents/png.png")
-    extract_from_image(image=image)
+    image = Image.open("./documents/png.png").convert("RGB")
+    tables = extract_from_image(image=image)
+    print(tables)
