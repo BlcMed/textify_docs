@@ -1,4 +1,3 @@
-from transformers import TableTransformerForObjectDetection
 from torchvision import transforms
 import torch
 from utils import *

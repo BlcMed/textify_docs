@@ -15,7 +15,7 @@ class PDFConverter(BaseConverter):
             
             for i, img in enumerate(images):
                 # Preprocess and extract text from each page image
-                text = self.image_converter.convert_to_text_from_image(img)
+                text = self.image_converter.extract_text_from_image(img)
                 full_text.append(text)
             
             return "\n".join(full_text)

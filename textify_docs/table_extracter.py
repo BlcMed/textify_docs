@@ -1,23 +1,13 @@
-#DETECTION_MODEL_PATH = "ok/"
-#ssmodel = TableTransformerForObjectDetection.from_pretrained("microsoft/table-transformer-detection")
-#ssmodel.save_pretrained(DETECTION_MODEL_PATH)
-#import torch
-#from transformers import TableTransformerForObjectDetection, DetrConfig
-#DETECTION_MODEL_PATH = "./textify_docs/models/pubtables0m_detection_detr_r18.pth"
-#state_dict = torch.load(DETECTION_MODEL_PATH, map_location=torch.device('cpu'))
-#config = DetrConfig.from_pretrained("microsoft/table-transformer-detection")
-#model = TableTransformerForObjectDetection(config)
-#model.load_state_dict(state_dict)
-#print("done")
+import sys
+sys.path.insert(0,"textify_docs/")
 
-
-#from transformers import TableTransformerForObjectDetection
-from table_detecter import detect_tables
-from table_structure_recognizer import recognize_table
 import pytesseract
 import numpy as np
 import cv2
 from PIL import Image
+
+from table_detecter import detect_tables
+from table_structure_recognizer import recognize_table
 
 def extract_from_image(image):
     image = image.convert("RGB")
@@ -31,12 +21,12 @@ def extract_from_image(image):
         print('-'*40)
         print(f'we got {len(cells_coordinates)} rows')
         print(f'we got {len(cells_coordinates[0]["cells"])} columns')
-        table_text = flatten_dict_to_text(table)
+        table_text = _flatten_dict_to_text(table)
         print(table_text)
         tables.append(table_text)
     return tables
 
-def flatten_dict_to_text(data_dict):
+def _flatten_dict_to_text(data_dict):
     """
     Flattens a dictionary representing tabular data into a readable text format.
 

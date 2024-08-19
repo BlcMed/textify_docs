@@ -1,9 +1,7 @@
 __pycache__/
 venv/
 documents/
-examples/
 build/
 dist/
 textify_docs.egg-info/
-
 *.vscode/

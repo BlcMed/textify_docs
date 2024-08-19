@@ -1,8 +1,15 @@
-from .base import BaseConverter
+import sys
+sys.path.insert(0,"textify_docs/")
+print(sys.path)
+
 import cv2 as cv
 from PIL import Image
 import pytesseract
 import numpy as np
+from base import BaseConverter
+from table_extracter import extract_from_image
+
+TABLE_SEPARATOR = "\n \n Some tabular data \n"
 
 class ImageConverter(BaseConverter):
 
@@ -13,16 +20,23 @@ class ImageConverter(BaseConverter):
         :return: A string containing the plain text extracted from the image.
         """
         try:
-            # Open the image file
             with Image.open(self.file_path) as img:
-                text = self.convert_to_text_from_image(img)
-            return text
+                text = self.extract_text_from_image(img)
+                # remove empty lines
+                text = '\n'.join(line for line in text.splitlines() if line.strip())
+                tables = extract_from_image(img)
+                print("ok:")
+                print(tables)
+                tabular_data = TABLE_SEPARATOR.join(tables)
+                full_text = text + "\n" + tabular_data
+            return full_text
+            #return tabular_data
         
         except Exception as e:
             print(f"An error occurred while converting the image file: {e}")
             return None
 
-    def convert_to_text_from_image(self, img):
+    def extract_text_from_image(self, img):
         """
         Convert the given image (in PIL format) to plain text using OCR.
         
@@ -31,7 +45,6 @@ class ImageConverter(BaseConverter):
         """
         try:
             preprocessed_img = self.preprocess_image(img)
-            # OCR with tesseract
             text = pytesseract.image_to_string(preprocessed_img)
             return text
         
@@ -48,13 +61,9 @@ class ImageConverter(BaseConverter):
         """
         # Convert PIL Image to a NumPy array
         img_np = np.array(img)
-
-        # Apply preprocessing steps
         img_np = self._preprocess_image(img_np)
-        
         # Convert the NumPy array back to a PIL Image
         preprocessed_img = Image.fromarray(img_np)
-        
         return preprocessed_img
 
     def _preprocess_image(self, img, grey=1, threshold=180, adapt=0, blur=0, thresh=0, sharp=0, edge_cascade=0, edge1=50, edge2=200):
@@ -106,3 +115,11 @@ class ImageConverter(BaseConverter):
 
     def _sharpen(self, img, kernel_sharp=np.array([[0, -1, 0], [-1, 5, -1], [0, -1, 0]])):
         return cv.filter2D(img, -1, kernel_sharp)
+
+        
+if __name__ == "__main__":
+    image_converter = ImageConverter("./documents/png.png")
+    text = image_converter.convert_to_text()
+    print(text)
+    with open("./documents/text result.txt", 'w') as file:
+        file.writelines(text) 
