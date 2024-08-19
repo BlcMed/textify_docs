@@ -1,5 +1,4 @@
 from pdf2image import convert_from_path
-from PIL import Image
 from .base import BaseConverter
 from .image_converter import ImageConverter
 

@@ -3,10 +3,6 @@ from torchvision import transforms
 import torch
 from utils import *
 
-structure_model = TableTransformerForObjectDetection.from_pretrained("microsoft/table-structure-recognition-v1.1-all")
-structure_id2label = structure_model.config.id2label
-structure_id2label[len(structure_id2label)] = "no object"
-
 structure_transform = transforms.Compose([
     MaxResize(1000),
     transforms.ToTensor(),

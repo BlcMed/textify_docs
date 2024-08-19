@@ -4,9 +4,11 @@ import torch
 from utils import *
 
 #load model
-model = TableTransformerForObjectDetection.from_pretrained("microsoft/table-transformer-detection")
-id2label = model.config.id2label
-id2label[len(model.config.id2label)] = "no object"
+#DETECTION_MODEL_PATH = "/models/pubtables1m_detection_detr_r18.pth"
+#model = TableTransformerForObjectDetection.from_pretrained(DETECTION_MODEL_PATH)
+#detection_model = TableTransformerForObjectDetection.from_pretrained("microsoft/table-transformer-detection")
+#id2label = detection_model.config.id2label
+#id2label[len(detection_model.config.id2label)] = "no object"
 
 # Constants
 DETECTION_CLASS_THRESHOLDS = {
@@ -15,24 +17,25 @@ DETECTION_CLASS_THRESHOLDS = {
     "no object": 10
 }
 PADDING = 10 
+
 detection_transform = transforms.Compose([
     MaxResize(800),
     transforms.ToTensor(),
     transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
 ])
 
-def detect_tables(image):
+def detect_tables(image, detection_model=detection_model):
     size = image.size
     tables=[]
-    device = "cuda" if torch.cuda.is_available() else "cpu"
-    model.to(device)
+    #device = "cuda" if torch.cuda.is_available() else "cpu"
+    #model.to(device)
     pixel_values = detection_transform(image)
     pixel_values = detection_transform(image).unsqueeze(0)
-    pixel_values = pixel_values.to(device)
+    #pixel_values = pixel_values.to(device)
     with torch.no_grad():
-        outputs = model(pixel_values)
+        outputs = detection_model(pixel_values)
     
-    objects = outputs_to_objects(outputs, size, id2label)
+    objects = outputs_to_objects(outputs, size, detection_id2label)
     
     tables = objects_to_crops(image, objects, DETECTION_CLASS_THRESHOLDS, padding=PADDING)
     #tables = [table['image'].convert("RGB") for table in tables]
@@ -55,30 +58,3 @@ def objects_to_crops(img, objects, class_thresholds, padding=10):
         #table_crops.append(cropped_table)
         table_crops.append(cropped_img)
     return table_crops
-
-'''
-def outputs_to_objects(outputs, img_size, id2label):
-    m = outputs.logits.softmax(-1).max(-1)
-    pred_labels = list(m.indices.detach().cpu().numpy())[0]
-    pred_scores = list(m.values.detach().cpu().numpy())[0]
-    pred_bboxes = outputs['pred_boxes'].detach().cpu()[0]
-    pred_bboxes = [elem.tolist() for elem in rescale_bboxes(pred_bboxes, img_size)]
-    objects = []
-    for label, score, bbox in zip(pred_labels, pred_scores, pred_bboxes):
-        class_label = id2label[int(label)]
-        if not class_label == 'no object':
-            objects.append({'label': class_label, 'score': float(score), 'bbox': [float(elem) for elem in bbox]})
-    return objects
-
-    
-def box_cxcywh_to_xyxy(x):
-    x_c, y_c, w, h = x.unbind(-1)
-    b = [(x_c - 0.5 * w), (y_c - 0.5 * h), (x_c + 0.5 * w), (y_c + 0.5 * h)]
-    return torch.stack(b, dim=1)
-
-def rescale_bboxes(out_bbox, size):
-    img_w, img_h = size
-    b = box_cxcywh_to_xyxy(out_bbox)
-    b = b * torch.tensor([img_w, img_h, img_w, img_h], dtype=torch.float32)
-    return b
-'''

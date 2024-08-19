@@ -1,3 +1,17 @@
+#DETECTION_MODEL_PATH = "ok/"
+#ssmodel = TableTransformerForObjectDetection.from_pretrained("microsoft/table-transformer-detection")
+#ssmodel.save_pretrained(DETECTION_MODEL_PATH)
+#import torch
+#from transformers import TableTransformerForObjectDetection, DetrConfig
+#DETECTION_MODEL_PATH = "./textify_docs/models/pubtables0m_detection_detr_r18.pth"
+#state_dict = torch.load(DETECTION_MODEL_PATH, map_location=torch.device('cpu'))
+#config = DetrConfig.from_pretrained("microsoft/table-transformer-detection")
+#model = TableTransformerForObjectDetection(config)
+#model.load_state_dict(state_dict)
+#print("done")
+
+
+#from transformers import TableTransformerForObjectDetection
 from table_detecter import detect_tables
 from table_structure_recognizer import recognize_table
 import pytesseract
@@ -6,17 +20,46 @@ import cv2
 from PIL import Image
 
 def extract_from_image(image):
+    image = image.convert("RGB")
     tables_images  = detect_tables(image)
-    #tables_images = [table['image'] for table in tables]
+    print('-'*40)
+    print(f'we got {len(tables_images)} table images')
     tables=[]
     for table_image in tables_images:
         cells_coordinates = recognize_table(table_image=table_image)
-        table = _extract_table_data_from_cells(cells_coordinates=cells_coordinates,table_image=table_image)
-        tables.append(table)
-
+        table = _apply_ocr_to_cells(cells_coordinates=cells_coordinates,table_image=table_image)
+        print('-'*40)
+        print(f'we got {len(cells_coordinates)} rows')
+        print(f'we got {len(cells_coordinates[0]["cells"])} columns')
+        table_text = flatten_dict_to_text(table)
+        print(table_text)
+        tables.append(table_text)
     return tables
 
-def _extract_table_data_from_cells(cells_coordinates, table_image, progress_callback=None):
+def flatten_dict_to_text(data_dict):
+    """
+    Flattens a dictionary representing tabular data into a readable text format.
+
+    Args:
+        data_dict (dict): Dictionary where keys are row numbers and values are lists of row data.
+
+    Returns:
+        str: Flattened text representation of the table.
+    """
+    text_representation = ""
+    for row_num, row_data in data_dict.items():
+        row_str = ", ".join(row_data) + ".\n"
+        text_representation += row_str + " "
+    
+    return text_representation.strip()
+
+
+
+def _apply_ocr_to_cells(cells_coordinates, table_image, progress_callback=None):
+    """
+    Returns:
+        data (dict): Dictionary where keys are row numbers and values are lists of row data.
+    """
     data = dict()
     max_num_columns = 0
     total_rows = len(cells_coordinates)
@@ -29,13 +72,10 @@ def _extract_table_data_from_cells(cells_coordinates, table_image, progress_call
         for cell in row["cells"]:
             # Crop cell out of image
             cell_image = np.array(table_image.crop(cell["cell"]))
-
             # Convert cell image to grayscale
             gray_image = cv2.cvtColor(cell_image, cv2.COLOR_RGB2GRAY)
-
             # Perform OCR using pytesseract
             text = pytesseract.image_to_string(gray_image)
-
             # Append OCR result to row text
             row_text.append(text.strip())
 
@@ -52,6 +92,5 @@ def _extract_table_data_from_cells(cells_coordinates, table_image, progress_call
     return data
 
 if __name__ == "__main__":
-    image = Image.open("./documents/png.png").convert("RGB")
+    image = Image.open("./documents/png.png")
     tables = extract_from_image(image=image)
-    print(tables)
