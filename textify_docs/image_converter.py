@@ -144,33 +144,9 @@ class ImageConverter(BaseConverter):
 
     def _sharpen(self, img, kernel_sharp=np.array([[0, -1, 0], [-1, 5, -1], [0, -1, 0]])):
         return cv.filter2D(img, -1, kernel_sharp)
-    
-    def convert_to_text_deprecated(self):
-        """
-        Convert the image file to plain text using OCR after preprocessing.
-        Returns:
-            str: A string containing the combined plain text and tabular data extracted from the image. 
-                If an error occurs during processing, returns None.
-        """
-        try:
-            with Image.open(self.file_path) as img:
-                text = self.extract_text_from_image(img)
-                # remove empty lines
-                text = '\n'.join(line for line in text.splitlines() if line.strip())
-                tables = extract_tables_from_image(img)
-                tabular_data_list = [table["table_text"] for table in tables]
-                print(tables)
-                tabular_data = SEPARATOR.join(tabular_data_list)
-                full_text = text + "\n" + tabular_data
-            return full_text
-        
-        except Exception as e:
-            print(f"An error occurred while converting the image file: {e}")
-            return None
-
-
+   
 if __name__ == "__main__":
-    image_converter = ImageConverter("./documents/png.png")
+    image_converter = ImageConverter("./data/png.png")
     text = image_converter.convert_to_text()
     print(text)
     with open("./data/text result.txt", 'w') as file:
