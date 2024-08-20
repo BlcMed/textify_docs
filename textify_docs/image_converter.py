@@ -9,7 +9,7 @@ import numpy as np
 from base import BaseConverter
 from table_extracter import extract_tables_from_image
 
-TABLE_SEPARATOR = "\n \n Some tabular data \n"
+SEPARATOR = "\n" + "-" * 20 +"\n"
 
 class ImageConverter(BaseConverter):
 
@@ -38,6 +38,8 @@ class ImageConverter(BaseConverter):
                         img_crop = img.crop(gap_bbox)
                         gap_text = self.extract_text_from_image(img_crop)
                         full_text.append(gap_text)
+                        print("-"*10)
+                        print(gap_text)
                     # Add the text from the current table
                     full_text.append(table_crop["table_text"])
                     # Update previous ymax to the current table's ymax
@@ -50,7 +52,11 @@ class ImageConverter(BaseConverter):
                     gap_text = self.extract_text_from_image(img_crop)
                     full_text.append(gap_text)
 
-                full_text = "\n".join(full_text)
+                #full_text = "\n".join(full_text)
+
+                full_text = SEPARATOR.join(full_text)
+                # Remove unnecessary line breaks
+                full_text = '\n'.join(line for line in full_text.splitlines() if line.strip())
                 return full_text
         
         except Exception as e:
@@ -154,7 +160,7 @@ class ImageConverter(BaseConverter):
                 tables = extract_tables_from_image(img)
                 tabular_data_list = [table["table_text"] for table in tables]
                 print(tables)
-                tabular_data = TABLE_SEPARATOR.join(tabular_data_list)
+                tabular_data = SEPARATOR.join(tabular_data_list)
                 full_text = text + "\n" + tabular_data
             return full_text
         
@@ -167,5 +173,5 @@ if __name__ == "__main__":
     image_converter = ImageConverter("./documents/png.png")
     text = image_converter.convert_to_text()
     print(text)
-    with open("./documents/text result.txt", 'w') as file:
+    with open("./data/text result.txt", 'w') as file:
         file.writelines(text) 

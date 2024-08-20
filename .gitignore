@@ -1,6 +1,6 @@
 __pycache__/
 venv/
-documents/
+data/
 build/
 dist/
 textify_docs.egg-info/

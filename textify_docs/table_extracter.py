@@ -23,18 +23,17 @@ def extract_tables_from_image(image):
     """
     image = image.convert("RGB")
     tables_crops  = detect_tables(image)
-    print('-'*40)
-    print(f'we got {len(tables_crops)} table images')
+    print('-' * 10)
+    print(f'There are {len(tables_crops)} table images')
     tables=[]
     for table_crop in tables_crops:
         table_image = table_crop["image"]
         cells_coordinates = recognize_table(table_image=table_image)
         table_data = _apply_ocr_to_cells(cells_coordinates=cells_coordinates,table_image=table_image)
         print('-'*40)
-        print(f'we got {len(cells_coordinates)} rows')
-        print(f'we got {len(cells_coordinates[0]["cells"])} columns')
+        print(f'with {len(cells_coordinates)} rows')
+        print(f'and {len(cells_coordinates[0]["cells"])} columns')
         table_text = _flatten_dict_to_text(table_data)
-        #print(table_text)
         tables.append({"table_text":table_text, "bbox":table_crop["bbox"]})
     return tables
 
@@ -50,7 +49,7 @@ def _flatten_dict_to_text(data_dict):
     """
     text_representation = ""
     for row_num, row_data in data_dict.items():
-        row_str = ", ".join(row_data) + ".\n"
+        row_str = " ; ".join(row_data) + ".\n"
         text_representation += row_str + " "
     
     return text_representation.strip()
@@ -79,7 +78,9 @@ def _apply_ocr_to_cells(cells_coordinates, table_image, progress_callback=None):
             # Perform OCR using pytesseract
             text = pytesseract.image_to_string(gray_image)
             # Append OCR result to row text
-            row_text.append(text.strip())
+            text = text.replace("|", "")
+            text = text.strip()
+            row_text.append(text)
 
         if len(row_text) > max_num_columns:
             max_num_columns = len(row_text)
@@ -94,5 +95,5 @@ def _apply_ocr_to_cells(cells_coordinates, table_image, progress_callback=None):
     return data
 
 if __name__ == "__main__":
-    image = Image.open("./documents/png.png")
+    image = Image.open("./data/png.png")
     tables = extract_tables_from_image(image=image)
