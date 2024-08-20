@@ -7,7 +7,7 @@ from PIL import Image
 import pytesseract
 import numpy as np
 from base import BaseConverter
-from table_extracter import extract_from_image
+from table_extracter import extract_tables_from_image
 
 TABLE_SEPARATOR = "\n \n Some tabular data \n"
 
@@ -15,26 +15,49 @@ class ImageConverter(BaseConverter):
 
     def convert_to_text(self):
         """
-        Convert the image file to plain text using OCR after preprocessing.
-
-        :return: A string containing the plain text extracted from the image.
+        Convert the image file to plain text using OCR by processing tables and gaps in between them chronologically.
+        
+        Returns:
+            str: A string containing the combined plain text from tables and gaps between them, ordered as they appear in the image.
+                If an error occurs during processing, returns None.
         """
         try:
             with Image.open(self.file_path) as img:
-                text = self.extract_text_from_image(img)
-                # remove empty lines
-                text = '\n'.join(line for line in text.splitlines() if line.strip())
-                tables = extract_from_image(img)
-                print("ok:")
-                print(tables)
-                tabular_data = TABLE_SEPARATOR.join(tables)
-                full_text = text + "\n" + tabular_data
-            return full_text
-            #return tabular_data
+                img_width, img_height = img.size
+                tables_crops = extract_tables_from_image(img)
+                table_bboxes = sorted([table["bbox"] for table in tables_crops], key=lambda b: b[1])  # Sort by ymin
+                full_text = []
+                
+                # Handle tables and gaps between them that contain simple plain textual data
+                previous_ymax = 0
+                for bbox, table_crop in zip(table_bboxes, tables_crops):
+                    ymin, ymax = bbox[1], bbox[3]
+                    # Extract text from the gap above the current table
+                    if ymin > previous_ymax:
+                        gap_bbox = (0, previous_ymax, img_width, ymin)
+                        img_crop = img.crop(gap_bbox)
+                        gap_text = self.extract_text_from_image(img_crop)
+                        full_text.append(gap_text)
+                    # Add the text from the current table
+                    full_text.append(table_crop["table_text"])
+                    # Update previous ymax to the current table's ymax
+                    previous_ymax = ymax
+                
+                # Handle the gap after the last table
+                if previous_ymax < img_height:
+                    gap_bbox = (0, previous_ymax, img_width, img_height)
+                    img_crop = img.crop(gap_bbox)
+                    gap_text = self.extract_text_from_image(img_crop)
+                    full_text.append(gap_text)
+
+                full_text = "\n".join(full_text)
+                return full_text
         
         except Exception as e:
-            print(f"An error occurred while converting the image file: {e}")
+            # Handle errors and return None
+            print(f"An error occurred: {e}")
             return None
+
 
     def extract_text_from_image(self, img):
         """
@@ -115,8 +138,31 @@ class ImageConverter(BaseConverter):
 
     def _sharpen(self, img, kernel_sharp=np.array([[0, -1, 0], [-1, 5, -1], [0, -1, 0]])):
         return cv.filter2D(img, -1, kernel_sharp)
-
+    
+    def convert_to_text_deprecated(self):
+        """
+        Convert the image file to plain text using OCR after preprocessing.
+        Returns:
+            str: A string containing the combined plain text and tabular data extracted from the image. 
+                If an error occurs during processing, returns None.
+        """
+        try:
+            with Image.open(self.file_path) as img:
+                text = self.extract_text_from_image(img)
+                # remove empty lines
+                text = '\n'.join(line for line in text.splitlines() if line.strip())
+                tables = extract_tables_from_image(img)
+                tabular_data_list = [table["table_text"] for table in tables]
+                print(tables)
+                tabular_data = TABLE_SEPARATOR.join(tabular_data_list)
+                full_text = text + "\n" + tabular_data
+            return full_text
         
+        except Exception as e:
+            print(f"An error occurred while converting the image file: {e}")
+            return None
+
+
 if __name__ == "__main__":
     image_converter = ImageConverter("./documents/png.png")
     text = image_converter.convert_to_text()

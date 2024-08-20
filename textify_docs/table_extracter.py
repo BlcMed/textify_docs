@@ -9,21 +9,33 @@ from PIL import Image
 from table_detecter import detect_tables
 from table_structure_recognizer import recognize_table
 
-def extract_from_image(image):
+def extract_tables_from_image(image):
+    """
+    Extract tables from an image and return their textual content along with their bounding boxes.
+    
+    Args:
+        image (PIL.Image.Image): The input image from which tables are to be extracted.
+    
+    Returns:
+        list: A list of dictionaries, where each dictionary contains:
+            - 'table_text': The textual content of the table extracted using OCR.
+            - 'bbox': The bounding box coordinates (x_min, y_min, x_max, y_max) of the table in the image.
+    """
     image = image.convert("RGB")
-    tables_images  = detect_tables(image)
+    tables_crops  = detect_tables(image)
     print('-'*40)
-    print(f'we got {len(tables_images)} table images')
+    print(f'we got {len(tables_crops)} table images')
     tables=[]
-    for table_image in tables_images:
+    for table_crop in tables_crops:
+        table_image = table_crop["image"]
         cells_coordinates = recognize_table(table_image=table_image)
-        table = _apply_ocr_to_cells(cells_coordinates=cells_coordinates,table_image=table_image)
+        table_data = _apply_ocr_to_cells(cells_coordinates=cells_coordinates,table_image=table_image)
         print('-'*40)
         print(f'we got {len(cells_coordinates)} rows')
         print(f'we got {len(cells_coordinates[0]["cells"])} columns')
-        table_text = _flatten_dict_to_text(table)
-        print(table_text)
-        tables.append(table_text)
+        table_text = _flatten_dict_to_text(table_data)
+        #print(table_text)
+        tables.append({"table_text":table_text, "bbox":table_crop["bbox"]})
     return tables
 
 def _flatten_dict_to_text(data_dict):
@@ -83,4 +95,4 @@ def _apply_ocr_to_cells(cells_coordinates, table_image, progress_callback=None):
 
 if __name__ == "__main__":
     image = Image.open("./documents/png.png")
-    tables = extract_from_image(image=image)
+    tables = extract_tables_from_image(image=image)
