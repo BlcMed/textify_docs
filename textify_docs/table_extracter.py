@@ -1,13 +1,13 @@
-import sys
-sys.path.insert(0,"textify_docs/")
+#import sys
+#sys.path.insert(0,"textify_docs/")
 
 import pytesseract
 import numpy as np
 import cv2
 from PIL import Image
 
-from table_detecter import detect_tables
-from table_structure_recognizer import recognize_table
+from .table_detecter import detect_tables
+from .table_structure_recognizer import recognize_table
 
 def extract_tables_from_image(image):
     """

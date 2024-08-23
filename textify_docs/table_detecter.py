@@ -1,9 +1,9 @@
-import sys
-sys.path.insert(0,"textify_docs/")
+#import sys
+#sys.path.insert(0,"textify_docs/")
 
 from torchvision import transforms
 import torch
-from utils import *
+from .utils import *
 
 # Constants
 DETECTION_CLASS_THRESHOLDS = {

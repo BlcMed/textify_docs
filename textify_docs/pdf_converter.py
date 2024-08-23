@@ -1,16 +1,16 @@
 from pdf2image import convert_from_path
 from .base import BaseConverter
-from .image_converter import ImageConverter
+#from .image_converter import ImageConverter
 
 class PDFConverter(BaseConverter):
 
-    def __init__(self, file_path):
-        super().__init__(file_path)
-        self.image_converter = ImageConverter(file_path)
+    def __init__(self, image_converter):
+        #self.image_converter = ImageConverter()
+        self.image_converter = image_converter
 
-    def convert_to_text(self):
+    def convert_to_text(self, file_path):
         try:
-            images = convert_from_path(self.file_path)
+            images = convert_from_path(file_path)
             full_text = []
             
             for i, img in enumerate(images):

@@ -2,9 +2,10 @@ from docx import Document
 from .base import BaseConverter
 
 class DocxConverter(BaseConverter):
-    def convert_to_text(self):
+
+    def convert_to_text(self, file_path):
         try:
-            document = Document(self.file_path)
+            document = Document(file_path)
             text = []
             
             for paragraph in document.paragraphs:

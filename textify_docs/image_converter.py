@@ -1,19 +1,19 @@
-import sys
-sys.path.insert(0,"textify_docs/")
-print(sys.path)
+#import sys
+#sys.path.insert(0,"textify_docs/")
+#print(sys.path)
 
 import cv2 as cv
 from PIL import Image
 import pytesseract
 import numpy as np
-from base import BaseConverter
-from table_extracter import extract_tables_from_image
+from .base import BaseConverter
+from .table_extracter import extract_tables_from_image
 
 SEPARATOR = "\n" + "-" * 20 +"\n"
 
 class ImageConverter(BaseConverter):
 
-    def convert_to_text(self):
+    def convert_to_text(self, file_path):
         """
         Convert the image file to plain text using OCR by processing tables and gaps in between them chronologically.
         
@@ -22,41 +22,8 @@ class ImageConverter(BaseConverter):
                 If an error occurs during processing, returns None.
         """
         try:
-            with Image.open(self.file_path) as img:
-                img_width, img_height = img.size
-                tables_crops = extract_tables_from_image(img)
-                table_bboxes = sorted([table["bbox"] for table in tables_crops], key=lambda b: b[1])  # Sort by ymin
-                full_text = []
-                
-                # Handle tables and gaps between them that contain simple plain textual data
-                previous_ymax = 0
-                for bbox, table_crop in zip(table_bboxes, tables_crops):
-                    ymin, ymax = bbox[1], bbox[3]
-                    # Extract text from the gap above the current table
-                    if ymin > previous_ymax:
-                        gap_bbox = (0, previous_ymax, img_width, ymin)
-                        img_crop = img.crop(gap_bbox)
-                        gap_text = self.extract_text_from_image(img_crop)
-                        full_text.append(gap_text)
-                        print("-"*10)
-                        print(gap_text)
-                    # Add the text from the current table
-                    full_text.append(table_crop["table_text"])
-                    # Update previous ymax to the current table's ymax
-                    previous_ymax = ymax
-                
-                # Handle the gap after the last table
-                if previous_ymax < img_height:
-                    gap_bbox = (0, previous_ymax, img_width, img_height)
-                    img_crop = img.crop(gap_bbox)
-                    gap_text = self.extract_text_from_image(img_crop)
-                    full_text.append(gap_text)
-
-                #full_text = "\n".join(full_text)
-
-                full_text = SEPARATOR.join(full_text)
-                # Remove unnecessary line breaks
-                full_text = '\n'.join(line for line in full_text.splitlines() if line.strip())
+            with Image.open(file_path) as img:
+                full_text = self.extract_text_from_image(img=img)
                 return full_text
         
         except Exception as e:
@@ -73,13 +40,49 @@ class ImageConverter(BaseConverter):
         :return: A string containing the plain text extracted from the image.
         """
         try:
-            preprocessed_img = self.preprocess_image(img)
-            text = pytesseract.image_to_string(preprocessed_img)
-            return text
+
+            #img = self.preprocess_image(img)
+            img_width, img_height = img.size
+            tables_crops = extract_tables_from_image(img)
+            table_bboxes = sorted([table["bbox"] for table in tables_crops], key=lambda b: b[1])  # Sort by ymin
+            full_text = []
+            
+            # Handle tables and gaps between them that contain simple plain textual data
+            previous_ymax = 0
+            for bbox, table_crop in zip(table_bboxes, tables_crops):
+                ymin, ymax = bbox[1], bbox[3]
+                # Extract text from the gap above the current table (doesn't contain tabular data theoritically)
+                if ymin > previous_ymax:
+                    gap_bbox = (0, previous_ymax, img_width, ymin)
+                    img_crop = img.crop(gap_bbox)
+                    gap_text = self.extract_plain_text_from_image(img_crop)
+                    full_text.append(gap_text)
+                # Add the text from the current table
+                full_text.append(table_crop["table_text"])
+                # Update previous ymax to the current table's ymax
+                previous_ymax = ymax
+            
+            # Handle the gap after the last table
+            if previous_ymax < img_height:
+                gap_bbox = (0, previous_ymax, img_width, img_height)
+                img_crop = img.crop(gap_bbox)
+                gap_text = self.extract_plain_text_from_image(img_crop)
+                full_text.append(gap_text)
+
+            #full_text = "\n".join(full_text)
+            full_text = SEPARATOR.join(full_text)
+            # Remove unnecessary line breaks
+            full_text = '\n'.join(line for line in full_text.splitlines() if line.strip())
+            return full_text
         
         except Exception as e:
             print(f"An error occurred while converting the image to text: {e}")
             return None
+
+    def extract_plain_text_from_image(self, img):
+        text = pytesseract.image_to_string(img)
+        return text
+        
 
     def preprocess_image(self, img):
         """
@@ -144,7 +147,8 @@ class ImageConverter(BaseConverter):
 
     def _sharpen(self, img, kernel_sharp=np.array([[0, -1, 0], [-1, 5, -1], [0, -1, 0]])):
         return cv.filter2D(img, -1, kernel_sharp)
-   
+
+ 
 if __name__ == "__main__":
     image_converter = ImageConverter("./data/png.png")
     text = image_converter.convert_to_text()
