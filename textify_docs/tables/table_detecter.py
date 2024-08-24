@@ -1,17 +1,8 @@
-#import sys
-#sys.path.insert(0,"textify_docs/")
-
 from torchvision import transforms
 import torch
-from .utils import *
+from ..utils import *
+from ..config import (DETECTION_CLASS_THRESHOLDS, PADDING)
 
-# Constants
-DETECTION_CLASS_THRESHOLDS = {
-    "table": 0.5,
-    "table rotated": 0.5,
-    "no object": 10
-}
-PADDING = 10 
 
 detection_transform = transforms.Compose([
     MaxResize(800),
@@ -30,7 +21,6 @@ def detect_tables(image, detection_model=detection_model):
     objects = outputs_to_objects(outputs, size, detection_id2label)
     
     tables = objects_to_crops(image, objects, DETECTION_CLASS_THRESHOLDS, padding=PADDING)
-    #tables = [table.convert("RGB") for table in tables]
     return tables
 
 

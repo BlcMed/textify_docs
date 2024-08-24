@@ -12,3 +12,11 @@ class XlsxConverter(BaseConverter):
         except Exception as e:
             print(f"An error occurred while converting the excel file: {e}")
             return None
+
+
+if __name__ == "__main__":
+    converter = XlsxConverter()
+    path="./data/xlsx.xlsx"
+    text = converter.convert_to_text(path)
+    with open("./data/xlsx_text.txt", 'w') as file:
+        file.writelines(text)

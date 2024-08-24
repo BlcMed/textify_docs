@@ -1,6 +1,3 @@
-#import sys
-#sys.path.insert(0,"textify_docs/")
-
 import pytesseract
 import numpy as np
 import cv2

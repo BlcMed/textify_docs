@@ -1,11 +1,9 @@
 from pdf2image import convert_from_path
 from .base import BaseConverter
-#from .image_converter import ImageConverter
 
 class PDFConverter(BaseConverter):
 
     def __init__(self, image_converter):
-        #self.image_converter = ImageConverter()
         self.image_converter = image_converter
 
     def convert_to_text(self, file_path):

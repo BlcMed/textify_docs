@@ -1,6 +1,6 @@
 from torchvision import transforms
 import torch
-from .utils import *
+from ..utils import *
 
 structure_transform = transforms.Compose([
     MaxResize(1000),

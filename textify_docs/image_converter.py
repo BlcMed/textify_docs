@@ -1,15 +1,11 @@
-#import sys
-#sys.path.insert(0,"textify_docs/")
-#print(sys.path)
-
 import cv2 as cv
 from PIL import Image
 import pytesseract
 import numpy as np
 from .base import BaseConverter
-from .table_extracter import extract_tables_from_image
+from .tables.table_extracter import extract_tables_from_image
+from .config import SEPARATOR
 
-SEPARATOR = "\n" + "-" * 20 +"\n"
 
 class ImageConverter(BaseConverter):
 
@@ -41,7 +37,7 @@ class ImageConverter(BaseConverter):
         """
         try:
 
-            #img = self.preprocess_image(img)
+            img = self.preprocess_image(img)
             img_width, img_height = img.size
             tables_crops = extract_tables_from_image(img)
             table_bboxes = sorted([table["bbox"] for table in tables_crops], key=lambda b: b[1])  # Sort by ymin
@@ -55,7 +51,8 @@ class ImageConverter(BaseConverter):
                 if ymin > previous_ymax:
                     gap_bbox = (0, previous_ymax, img_width, ymin)
                     img_crop = img.crop(gap_bbox)
-                    gap_text = self.extract_plain_text_from_image(img_crop)
+                    #gap_text = self.extract_plain_text_from_image(img_crop)
+                    gap_text = pytesseract.image_to_string(img_crop)
                     full_text.append(gap_text)
                 # Add the text from the current table
                 full_text.append(table_crop["table_text"])
@@ -66,7 +63,8 @@ class ImageConverter(BaseConverter):
             if previous_ymax < img_height:
                 gap_bbox = (0, previous_ymax, img_width, img_height)
                 img_crop = img.crop(gap_bbox)
-                gap_text = self.extract_plain_text_from_image(img_crop)
+                #gap_text = self.extract_plain_text_from_image(img_crop)
+                gap_text = pytesseract.image_to_string(img_crop)
                 full_text.append(gap_text)
 
             #full_text = "\n".join(full_text)

@@ -11,7 +11,9 @@ class DocxConverter(BaseConverter):
             for paragraph in document.paragraphs:
                 text.append(paragraph.text)
             
-            return "\n".join(text)
+            text = "\n".join(text)
+            text = '\n'.join(line for line in text.splitlines() if line.strip())
+            return text
         
         except Exception as e:
             print(f"An error occurred while converting the DOCX file: {e}")

@@ -7,7 +7,7 @@ def parse_requirements(filename):
 
 setup(
     name="textify_docs",
-    version="0.1.1", 
+    version="1.0.1", 
     packages=find_packages(),
     install_requires=parse_requirements('requirements.txt'),
     extras_require={

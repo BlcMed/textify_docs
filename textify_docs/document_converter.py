@@ -40,12 +40,13 @@ class DocumentConverter(BaseConverter):
 if __name__ == "__main__":
     document_converter = DocumentConverter()
 
-    path="./data/png.png"
+    path="./data/docx.docx"
     text = document_converter.convert_to_text(path)
-    with open("./data/png_text.txt", 'w') as file:
+    with open("./data/docx_text.txt", 'w') as file:
         file.writelines(text) 
 
-    path="./data/pdf.pdf"
+    path="./data/xlsx.xlsx"
     text = document_converter.convert_to_text(path)
-    with open("./data/pdf_text.txt", 'w') as file:
-        file.writelines(text) 
+    print(text)
+    with open("./data/xlsx_text.txt", 'w') as file:
+        file.writelines(text)

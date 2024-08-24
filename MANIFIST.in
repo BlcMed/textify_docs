@@ -4,7 +4,7 @@ include LICENSE
 
 # Excluding
 recursive-exclude examples *
-recursive-exclude documents *
+recursive-exclude data *
 recursive-exclude venv *
 global-exclude .gitignore
 
