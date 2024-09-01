@@ -82,24 +82,11 @@ class ImageConverter(BaseConverter):
         return text
         
 
-    def preprocess_image(self, img):
+    def preprocess_image(self, img, grey=1, threshold=180, adapt=0, blur=0, thresh=0, sharp=0, edge_cascade=0, edge1=50, edge2=200):
         """
         Preprocess the image using OpenCV functions.
 
         :param img: The image in PIL format.
-        :return: The preprocessed image in PIL format.
-        """
-        # Convert PIL Image to a NumPy array
-        img_np = np.array(img)
-        img_np = self._preprocess_image(img_np)
-        # Convert the NumPy array back to a PIL Image
-        preprocessed_img = Image.fromarray(img_np)
-        return preprocessed_img
-
-    def _preprocess_image(self, img, grey=1, threshold=180, adapt=0, blur=0, thresh=0, sharp=0, edge_cascade=0, edge1=50, edge2=200):
-        """
-        Apply preprocessing steps to the image using OpenCV functions.
-
         :param img: The image in NumPy array format.
         :param grey: Flag to apply grayscale conversion.
         :param threshold: Threshold value for binary thresholding.
@@ -110,9 +97,14 @@ class ImageConverter(BaseConverter):
         :param edge_cascade: Flag to apply edge detection.
         :param edge1: First threshold for edge detection.
         :param edge2: Second threshold for edge detection.
-        :return: The preprocessed image in NumPy array format.
+
+        :return: The preprocessed image in PIL format.
         """
-        newImg = img
+        # Convert PIL Image to a NumPy array
+        img_np = np.array(img)
+        #img_np = self._preprocess_image(img_np)
+
+        newImg = img_np
         if grey:
             newImg = self._grey(newImg)
         if edge_cascade:
@@ -125,7 +117,40 @@ class ImageConverter(BaseConverter):
             newImg = self._adaptive_threshold(newImg)
         if sharp:
             newImg = self._sharpen(newImg)
-        return newImg
+        # Convert the NumPy array back to a PIL Image
+        preprocessed_img = Image.fromarray(newImg)
+        return preprocessed_img
+
+#    def _preprocess_image(self, img, grey=1, threshold=180, adapt=0, blur=0, thresh=0, sharp=0, edge_cascade=0, edge1=50, edge2=200):
+#        """
+#        Apply preprocessing steps to the image using OpenCV functions.
+#
+#        :param img: The image in NumPy array format.
+#        :param grey: Flag to apply grayscale conversion.
+#        :param threshold: Threshold value for binary thresholding.
+#        :param adapt: Flag to apply adaptive thresholding.
+#        :param blur: Flag to apply median blur.
+#        :param thresh: Flag to apply binary thresholding.
+#        :param sharp: Flag to apply sharpening.
+#        :param edge_cascade: Flag to apply edge detection.
+#        :param edge1: First threshold for edge detection.
+#        :param edge2: Second threshold for edge detection.
+#        :return: The preprocessed image in NumPy array format.
+#        """
+#        newImg = img
+#        if grey:
+#            newImg = self._grey(newImg)
+#        if edge_cascade:
+#            newImg = self._edge_cascade(newImg, edge1, edge2)
+#        if blur:
+#            newImg = self._blur(newImg)
+#        if thresh:
+#            newImg = self._threshold(newImg, threshold)
+#        if adapt:
+#            newImg = self._adaptive_threshold(newImg)
+#        if sharp:
+#            newImg = self._sharpen(newImg)
+#        return newImg
 
     def _grey(self, img):
         return cv.cvtColor(img, code=cv.COLOR_BGR2GRAY)
