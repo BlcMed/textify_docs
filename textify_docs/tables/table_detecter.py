@@ -1,11 +1,11 @@
 from torchvision import transforms
 import torch
 from ..utils import *
-from ..config import (DETECTION_CLASS_THRESHOLDS, PADDING)
+from ..config import (DETECTION_CLASS_THRESHOLDS, PADDING, MAX_SIZE)
 
 
 detection_transform = transforms.Compose([
-    MaxResize(800),
+    MaxResize(max_size=MAX_SIZE),
     transforms.ToTensor(),
     transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
 ])
