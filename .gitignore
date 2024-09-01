@@ -6,3 +6,4 @@ build/
 dist/
 textify_docs.egg-info/
 *.vscode/
+poetry.lock
