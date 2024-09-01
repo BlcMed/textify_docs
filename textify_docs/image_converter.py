@@ -51,8 +51,7 @@ class ImageConverter(BaseConverter):
                 if ymin > previous_ymax:
                     gap_bbox = (0, previous_ymax, img_width, ymin)
                     img_crop = img.crop(gap_bbox)
-                    #gap_text = self.extract_plain_text_from_image(img_crop)
-                    gap_text = pytesseract.image_to_string(img_crop)
+                    gap_text = pytesseract.image_to_string(img_crop, config=TESSERACT_CONFIG_PLAIN_TEXT)
                     full_text.append(gap_text)
                 # Add the text from the current table
                 full_text.append(table_crop["table_text"])
@@ -63,8 +62,8 @@ class ImageConverter(BaseConverter):
             if previous_ymax < img_height:
                 gap_bbox = (0, previous_ymax, img_width, img_height)
                 img_crop = img.crop(gap_bbox)
-                #gap_text = self.extract_plain_text_from_image(img_crop)
-                gap_text = pytesseract.image_to_string(img_crop)
+                TESSERACT_CONFIG_PLAIN_TEXT="--psm 3 --oem 3"
+                gap_text = pytesseract.image_to_string(img_crop, config=TESSERACT_CONFIG_PLAIN_TEXT)
                 full_text.append(gap_text)
 
             #full_text = "\n".join(full_text)
@@ -76,11 +75,6 @@ class ImageConverter(BaseConverter):
         except Exception as e:
             print(f"An error occurred while converting the image to text: {e}")
             return None
-
-    def extract_plain_text_from_image(self, img):
-        text = pytesseract.image_to_string(img)
-        return text
-        
 
     def preprocess_image(self, img, grey=GREY, threshold= THRESHOLD, adapt=ADAPT, blur=BLUR, thresh=THRESH, sharp=SHARP, edge_cascade=EDGE_CASCADE, edge1=EDGE1, edge2=EDGE2):
         """
@@ -141,8 +135,9 @@ class ImageConverter(BaseConverter):
 
  
 if __name__ == "__main__":
-    image_converter = ImageConverter("./data/png.png")
-    text = image_converter.convert_to_text()
+    path="./data/png.png"
+    image_converter = ImageConverter()
+    text = image_converter.convert_to_text(path)
     print(text)
     with open("./data/text result.txt", 'w') as file:
         file.writelines(text) 

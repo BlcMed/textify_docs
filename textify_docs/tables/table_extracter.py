@@ -2,6 +2,7 @@ import pytesseract
 import numpy as np
 import cv2
 from PIL import Image
+from ..config import TESSERACT_CONFIG_CELL
 
 from .table_detecter import detect_tables
 from .table_structure_recognizer import recognize_table
@@ -53,28 +54,21 @@ def _flatten_dict_to_text(data_dict):
 
 
 
-def _apply_ocr_to_cells(cells_coordinates, table_image, progress_callback=None):
+def _apply_ocr_to_cells(cells_coordinates, table_image, config = TESSERACT_CONFIG_CELL):
     """
     Returns:
         data (dict): Dictionary where keys are row numbers and values are lists of row data.
     """
     data = dict()
     max_num_columns = 0
-    total_rows = len(cells_coordinates)
     
     for idx, row in enumerate(cells_coordinates):
-        if progress_callback:
-            progress_callback(idx, total_rows)
-        
         row_text = []
         for cell in row["cells"]:
-            # Crop cell out of image
             cell_image = np.array(table_image.crop(cell["cell"]))
             # Convert cell image to grayscale
             gray_image = cv2.cvtColor(cell_image, cv2.COLOR_RGB2GRAY)
-            # Perform OCR using pytesseract
-            text = pytesseract.image_to_string(gray_image)
-            # Append OCR result to row text
+            text = pytesseract.image_to_string(gray_image, config=config)
             text = text.replace("|", "")
             text = text.strip()
             row_text.append(text)
