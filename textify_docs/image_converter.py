@@ -4,7 +4,7 @@ import pytesseract
 import numpy as np
 from .base import BaseConverter
 from .tables.table_extracter import extract_tables_from_image
-from .config import *
+from .config import SEPARATOR, TESSERACT_CONFIG_PLAIN_TEXT, GREY, THRESHOLD,ADAPT, BLUR, THRESH, SHARP, EDGE_CASCADE,EDGE1,EDGE2
 
 
 class ImageConverter(BaseConverter):
@@ -53,7 +53,6 @@ class ImageConverter(BaseConverter):
                     img_crop = img.crop(gap_bbox)
                     gap_text = pytesseract.image_to_string(img_crop, config=TESSERACT_CONFIG_PLAIN_TEXT)
                     full_text.append(gap_text)
-                # Add the text from the current table
                 full_text.append(table_crop["table_text"])
                 # Update previous ymax to the current table's ymax
                 previous_ymax = ymax
@@ -62,7 +61,6 @@ class ImageConverter(BaseConverter):
             if previous_ymax < img_height:
                 gap_bbox = (0, previous_ymax, img_width, img_height)
                 img_crop = img.crop(gap_bbox)
-                TESSERACT_CONFIG_PLAIN_TEXT="--psm 3 --oem 3"
                 gap_text = pytesseract.image_to_string(img_crop, config=TESSERACT_CONFIG_PLAIN_TEXT)
                 full_text.append(gap_text)
 

@@ -24,6 +24,7 @@ timm = "^1.0.9"
 [tool.poetry.group.dev.dependencies]
 ipykernel = "^6.29.5"
 matplotlib = "^3.9.2"
+pytest = "^8.3.2"
 
 [build-system]
 requires = ["poetry-core"]
