@@ -1,10 +1,10 @@
-import cv2 as cv
+import cv2
 from PIL import Image
 import pytesseract
 import numpy as np
 from .base import BaseConverter
 from .tables.table_extracter import extract_tables_from_image
-from .config import SEPARATOR, TESSERACT_CONFIG_PLAIN_TEXT, GREY, THRESHOLD,ADAPT, BLUR, THRESH, SHARP, EDGE_CASCADE,EDGE1,EDGE2
+from .config import SEPARATOR, TESSERACT_CONFIG_PLAIN_TEXT, GREY, THRESHOLD,ADAPT, BLUR, THRESH, SHARP, EDGE_CASCADE,EDGE1,EDGE2, KERNEL_SHARP, MAXVALUE, BLOCKSIZE, C
 
 
 class ImageConverter(BaseConverter):
@@ -74,18 +74,18 @@ class ImageConverter(BaseConverter):
             print(f"An error occurred while converting the image to text: {e}")
             return None
 
-    def preprocess_image(self, img, grey=GREY, threshold= THRESHOLD, adapt=ADAPT, blur=BLUR, thresh=THRESH, sharp=SHARP, edge_cascade=EDGE_CASCADE, edge1=EDGE1, edge2=EDGE2):
+    def preprocess_image(self, img, grey=GREY, adapt=ADAPT, blur=BLUR, thresh=THRESH, sharp=SHARP, edge_cascade=EDGE_CASCADE, edge1=EDGE1, edge2=EDGE2,threshold= THRESHOLD , maxValue=MAXVALUE, blockSize=BLOCKSIZE, C=C):
         """
-        Preprocess the image using OpenCV functions.
+        Preprocess the image (in PIL fomrat) using Opencv2.functions.
 
         :param img: The image in PIL format.
         :param grey: Flag to apply grayscale conversion.
-        :param threshold: Threshold value for binary thresholding.
         :param adapt: Flag to apply adaptive thresholding.
         :param blur: Flag to apply median blur.
         :param thresh: Flag to apply binary thresholding.
         :param sharp: Flag to apply sharpening.
         :param edge_cascade: Flag to apply edge detection.
+        :param threshold: Threshold value for binary thresholding.
         :param edge1: First threshold for edge detection.
         :param edge2: Second threshold for edge detection.
 
@@ -93,7 +93,6 @@ class ImageConverter(BaseConverter):
         """
         # Convert PIL Image to a NumPy array
         img_np = np.array(img)
-        #img_np = self._preprocess_image(img_np)
 
         newImg = img_np
         if grey:
@@ -105,7 +104,7 @@ class ImageConverter(BaseConverter):
         if thresh:
             newImg = self._threshold(newImg, threshold)
         if adapt:
-            newImg = self._adaptive_threshold(newImg)
+            newImg = self._adaptive_threshold(newImg,maxValue=maxValue, blockSize=blockSize,C=C)
         if sharp:
             newImg = self._sharpen(newImg)
         # Convert the NumPy array back to a PIL Image
@@ -113,23 +112,31 @@ class ImageConverter(BaseConverter):
         return preprocessed_img
 
     def _grey(self, img):
-        return cv.cvtColor(img, code=cv.COLOR_BGR2GRAY)
+        return cv2.cvtColor(img, code=cv2.COLOR_BGR2GRAY)
 
     def _edge_cascade(self, img, t1=50, t2=200):
-        return cv.Canny(img, t1, t2)
+        return cv2.Canny(img, t1, t2)
 
     def _blur(self, img):
-        return cv.medianBlur(img, 3)
+        return cv2.medianBlur(img, 3)
 
     def _threshold(self, img, threshold=180):
-        _, newImg = cv.threshold(img, threshold, 250, cv.THRESH_BINARY)
+        # Convert to grayscale if the image is not already
+        grayscaled_img=img
+        if len(img.shape) == 3:
+            grayscaled_img = self._gray(img)
+        _, newImg = cv2.threshold(grayscaled_img, threshold, 255, cv2.THRESH_BINARY)
         return newImg
 
-    def _adaptive_threshold(self, img):
-        return cv.adaptiveThreshold(img, 200, cv.ADAPTIVE_THRESH_GAUSSIAN_C, cv.THRESH_BINARY, 11, 3)
+    def _adaptive_threshold(self, img, maxValue, blockSize, C):
+        # Convert to grayscale if the image is not already
+        grayscaled_img=img
+        if len(img.shape) == 3:
+            grayscaled_img = self._gray(img)
+        return cv2.adaptiveThreshold(grayscaled_img,maxValue=maxValue, adaptiveMethod=cv2.ADAPTIVE_THRESH_GAUSSIAN_C, thresholdType=cv2.THRESH_BINARY, blockSize=blockSize, C=C)
 
-    def _sharpen(self, img, kernel_sharp=np.array([[0, -1, 0], [-1, 5, -1], [0, -1, 0]])):
-        return cv.filter2D(img, -1, kernel_sharp)
+    def _sharpen(self, img, kernel_sharp=np.array(KERNEL_SHARP)):
+        return cv2.filter2D(img, -1, kernel_sharp)
 
  
 if __name__ == "__main__":
