@@ -49,7 +49,6 @@ def _flatten_dict_to_text(data_dict):
     for row_num, row_data in data_dict.items():
         row_str = " ; ".join(row_data) + ".\n"
         text_representation += row_str + " "
-    
     return text_representation.strip()
 
 
@@ -72,17 +71,14 @@ def _apply_ocr_to_cells(cells_coordinates, table_image, config = TESSERACT_CONFI
             text = text.replace("|", "")
             text = text.strip()
             row_text.append(text)
-
         if len(row_text) > max_num_columns:
             max_num_columns = len(row_text)
         data[idx] = row_text
-
     # Pad rows which don't have max_num_columns elements
     for row, row_data in data.copy().items():
         if len(row_data) != max_num_columns:
             row_data = row_data + [""] * (max_num_columns - len(row_data))
         data[row] = row_data
-
     return data
 
 if __name__ == "__main__":

@@ -25,14 +25,16 @@ SHARP=0
 
 # DEFAULT CONSTANTS
 KERNEL_SHARP=[[0, -1, 0], [-1, 5, -1], [0, -1, 0]]
-#edge_cascade: Flag to apply edge detection.
+# edge_cascade: Flag to apply edge detection.
 EDGE_CASCADE=0
-#threshold: Threshold value for binary thresholding.
+# threshold: Threshold value for binary thresholding.
 THRESHOLD=180
-#edge1: First threshold for edge detection.
+# edge1: First threshold for edge detection.
 EDGE1=50
-#edge2: Second threshold for edge detection.
+# edge2: Second threshold for edge detection.
 EDGE2=200
+# blur
+BLUR_KERNEL_SIZE=3
 # adaptive threshold
 MAXVALUE = 200
 BLOCKSIZE = 11
