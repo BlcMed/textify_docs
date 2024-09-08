@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "textify-docs"
-version = "2.1.0"
+version = "1.1.0"
 description = ""
 authors = ["Mohamed Boulaich <boulaich.mohamed970@gmail.com>"]
 license = "GNU General Public License v3.0"

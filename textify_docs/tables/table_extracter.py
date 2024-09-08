@@ -19,6 +19,26 @@ def extract_tables_from_image(image, language):
             - 'table_text': The textual content of the table extracted using OCR.
             - 'bbox': The bounding box coordinates (x_min, y_min, x_max, y_max) of the table in the image.
     """
+    tables_dicts = extract_tables_from_image_as_dict(image, language)
+    tables = []
+    for table_dict in tables_dicts:
+        table_text = _flatten_dict_to_text(table_dict["table_dict"])
+        tables.append({"table_text":table_text, "bbox":table_dict["bbox"]})
+    return tables
+
+
+def extract_tables_from_image_as_dict(image, language):
+    """
+    Extract tables from an image and return their textual content as dict along with their bounding boxes.
+    
+    Args:
+        image (PIL.Image.Image): The input image from which tables are to be extracted.
+    
+    Returns:
+        list: A list of dictionaries, where each dictionary contains:
+            - 'table_dict': The tabular data extracted from the table using OCR
+            - 'bbox': The bounding box coordinates (x_min, y_min, x_max, y_max) of the table in the image.
+    """
     image = image.convert("RGB")
     tables_crops  = detect_tables(image)
     print('-' * 10)
@@ -27,12 +47,11 @@ def extract_tables_from_image(image, language):
     for table_crop in tables_crops:
         table_image = table_crop["image"]
         cells_coordinates = recognize_table(table_image=table_image)
-        table_data = _apply_ocr_to_cells(cells_coordinates=cells_coordinates,table_image=table_image, language=language)
+        table_data = _apply_ocr_to_cells(cells_coordinates=cells_coordinates,table_image=table_image, language=language) # dict
         print('-'*40)
         print(f'with {len(cells_coordinates)} rows')
         print(f'and {len(cells_coordinates[0]["cells"])} columns')
-        table_text = _flatten_dict_to_text(table_data)
-        tables.append({"table_text":table_text, "bbox":table_crop["bbox"]})
+        tables.append({"table_dict":table_data, "bbox":table_crop["bbox"]})
     return tables
 
 def _flatten_dict_to_text(data_dict):
