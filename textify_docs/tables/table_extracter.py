@@ -7,7 +7,7 @@ from ..config import TESSERACT_CONFIG_CELL
 from .table_detecter import detect_tables
 from .table_structure_recognizer import recognize_table
 
-def extract_tables_from_image(image):
+def extract_tables_from_image(image, language):
     """
     Extract tables from an image and return their textual content along with their bounding boxes.
     
@@ -27,7 +27,7 @@ def extract_tables_from_image(image):
     for table_crop in tables_crops:
         table_image = table_crop["image"]
         cells_coordinates = recognize_table(table_image=table_image)
-        table_data = _apply_ocr_to_cells(cells_coordinates=cells_coordinates,table_image=table_image)
+        table_data = _apply_ocr_to_cells(cells_coordinates=cells_coordinates,table_image=table_image, language=language)
         print('-'*40)
         print(f'with {len(cells_coordinates)} rows')
         print(f'and {len(cells_coordinates[0]["cells"])} columns')
@@ -53,7 +53,7 @@ def _flatten_dict_to_text(data_dict):
 
 
 
-def _apply_ocr_to_cells(cells_coordinates, table_image, config = TESSERACT_CONFIG_CELL):
+def _apply_ocr_to_cells(cells_coordinates, table_image, language, config = TESSERACT_CONFIG_CELL):
     """
     Returns:
         data (dict): Dictionary where keys are row numbers and values are lists of row data.
@@ -67,7 +67,7 @@ def _apply_ocr_to_cells(cells_coordinates, table_image, config = TESSERACT_CONFI
             cell_image = np.array(table_image.crop(cell["cell"]))
             # Convert cell image to grayscale
             gray_image = cv2.cvtColor(cell_image, cv2.COLOR_RGB2GRAY)
-            text = pytesseract.image_to_string(gray_image, config=config)
+            text = pytesseract.image_to_string(gray_image,lang=language, config=config)
             text = text.replace("|", "")
             text = text.strip()
             row_text.append(text)
