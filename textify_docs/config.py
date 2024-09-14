@@ -1,13 +1,32 @@
-SEPARATOR = "\n" + "-" * 20 +"\n"
 
+SUPPORTED_FILE_FORMATS=['docx', '.pdf', '.png', '.jpg', '.jpeg', '.bmp', '.tiff', '.xls', '.xlsx']
+
+
+## TESSERACT CONFIG ##
+LANGUAGE="fra"
+TESSERACT_CONFIG_PLAIN_TEXT="--psm 3 --oem 3"
+TESSERACT_CONFIG_CELL="--psm 6 --oem 3"
+
+
+## TABLE EXTRACTION CONSTANTS ##
+# The threshold used to determine if a detected object is a table or not.
 DETECTION_CLASS_THRESHOLDS = {
     "table": 0.5,
     "table rotated": 0.5,
     "no object": 10
 }
+# the padding to add to each cell bounding box in a table.
 PADDING = 10 
 
-SUPPORTED_FILE_FORMATS=['docx', '.pdf', '.png', '.jpg', '.jpeg', '.bmp', '.tiff', '.xls', '.xlsx']
+
+# The separator used to separate the different parts of the image (e.g., text, tables, etc.).
+SEPARATOR = "\n" + "-" * 20 +"\n"
+
+
+## PATHS ##
+# Path to the directory where the models are stored.
+MODELS_PATH="cached_models/"
+
 
 ## PREPROCESSING IMAGE CONSTANTS ## 
 
@@ -41,8 +60,3 @@ BLOCKSIZE = 11
 C = 3
 
 MAX_SIZE= 800
-
-## TESSERACT CONFIG ##
-LANGUAGE="fra"
-TESSERACT_CONFIG_PLAIN_TEXT="--psm 3 --oem 3"
-TESSERACT_CONFIG_CELL="--psm 6 --oem 3"
