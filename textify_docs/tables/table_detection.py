@@ -1,25 +1,11 @@
-from torchvision import transforms
-import torch
-from ..utils import *
-from ..config import (DETECTION_CLASS_THRESHOLDS, PADDING, MAX_SIZE)
+from ..config import (DETECTION_CLASS_THRESHOLDS, PADDING, TABLE_DETECTION_MODEL_NAME)
+from ..models.table_transformer import load_table_model, infer_objects
+from ..models.preprocessing import detection_transform
 
-
-detection_transform = transforms.Compose([
-    MaxResize(max_size=MAX_SIZE),
-    transforms.ToTensor(),
-    transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
-])
+detection_model = load_table_model(TABLE_DETECTION_MODEL_NAME)
 
 def detect_tables(image, detection_model=detection_model):
-    size = image.size
-    tables=[]
-    pixel_values = detection_transform(image)
-    pixel_values = detection_transform(image).unsqueeze(0)
-    with torch.no_grad():
-        outputs = detection_model(pixel_values)
-    
-    objects = outputs_to_objects(outputs, size, detection_id2label)
-    
+    objects = infer_objects(image, detection_model, detection_transform)
     tables = objects_to_crops(image, objects, DETECTION_CLASS_THRESHOLDS, padding=PADDING)
     return tables
 

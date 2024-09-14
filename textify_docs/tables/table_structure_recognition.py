@@ -1,20 +1,12 @@
-from torchvision import transforms
-import torch
-from ..utils import *
+from ..models.table_transformer import load_table_model, infer_objects
+from ..config import TABLE_STRUCTURE_RECOGNITION_MODEL_NAME
+from ..models.preprocessing import structure_recognition_transform
 
-structure_transform = transforms.Compose([
-    MaxResize(1000),
-    transforms.ToTensor(),
-    transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
-])
 
-###
+structure_recognition_model = load_table_model(TABLE_STRUCTURE_RECOGNITION_MODEL_NAME)
+
 def recognize_table(table_image):
-    pixel_values = structure_transform(table_image).unsqueeze(0)
-    # forward pass
-    with torch.no_grad():
-        outputs = structure_model(pixel_values)
-    cells = outputs_to_objects(outputs, table_image.size, structure_id2label)
+    cells = infer_objects(table_image, structure_recognition_model, structure_recognition_transform)
     cell_coordinates = get_cell_coordinates_by_row(cells)
     return cell_coordinates
 

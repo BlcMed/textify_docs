@@ -26,7 +26,8 @@ SEPARATOR = "\n" + "-" * 20 +"\n"
 ## PATHS ##
 # Path to the directory where the models are stored.
 MODELS_PATH="cached_models/"
-
+TABLE_DETECTION_MODEL_NAME = "microsoft/table-transformer-detection"
+TABLE_STRUCTURE_RECOGNITION_MODEL_NAME = "microsoft/table-structure-recognition-v1.1-all"
 
 ## PREPROCESSING IMAGE CONSTANTS ## 
 

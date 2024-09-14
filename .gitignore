@@ -7,3 +7,4 @@ dist/
 textify_docs.egg-info/
 *.vscode/
 poetry.lock
+cached_models/

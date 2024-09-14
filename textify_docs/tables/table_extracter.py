@@ -3,9 +3,9 @@ import numpy as np
 import cv2
 from PIL import Image
 from ..config import TESSERACT_CONFIG_CELL
+from .table_detection import detect_tables
+from .table_structure_recognition import recognize_table
 
-from .table_detecter import detect_tables
-from .table_structure_recognizer import recognize_table
 
 def extract_tables_from_image(image, language):
     """
@@ -41,18 +41,17 @@ def extract_tables_from_image_as_dict(image, language):
     """
     image = image.convert("RGB")
     tables_crops  = detect_tables(image)
-    print('-' * 10)
-    print(f'There are {len(tables_crops)} table images')
     tables=[]
+    print('-' * 20)
+    print(f'{len(tables_crops)} tables detected in this image:')
     for table_crop in tables_crops:
         table_image = table_crop["image"]
         cells_coordinates = recognize_table(table_image=table_image)
         table_data = _apply_ocr_to_cells(cells_coordinates=cells_coordinates,table_image=table_image, language=language) # dict
-        print('-'*40)
-        print(f'with {len(cells_coordinates)} rows')
-        print(f'and {len(cells_coordinates[0]["cells"])} columns')
         tables.append({"table_dict":table_data, "bbox":table_crop["bbox"]})
+        print(f'with {len(cells_coordinates)} row and {len(cells_coordinates[0]["cells"])} columns.')
     return tables
+
 
 def _flatten_dict_to_text(data_dict):
     """
@@ -69,7 +68,6 @@ def _flatten_dict_to_text(data_dict):
         row_str = " ; ".join(row_data) + ".\n"
         text_representation += row_str + " "
     return text_representation.strip()
-
 
 
 def _apply_ocr_to_cells(cells_coordinates, table_image, language, config = TESSERACT_CONFIG_CELL):
@@ -99,6 +97,7 @@ def _apply_ocr_to_cells(cells_coordinates, table_image, language, config = TESSE
             row_data = row_data + [""] * (max_num_columns - len(row_data))
         data[row] = row_data
     return data
+
 
 if __name__ == "__main__":
     image = Image.open("./data/png.png")
