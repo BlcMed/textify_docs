@@ -1,7 +1,9 @@
-import pytest
-from textify_docs.image_converter import ImageConverter
-from PIL import Image
 import numpy as np
+import pytest
+from PIL import Image
+
+from textify_docs.image_converter import ImageConverter
+
 
 @pytest.fixture
 def image_converter():

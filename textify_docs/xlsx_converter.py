@@ -1,12 +1,18 @@
-from .base import BaseConverter
 import pandas as pd
 
+from .base import BaseConverter
+
+
 class XlsxConverter(BaseConverter):
+    """
+    Responsible for extractiong data from spreadsheets
+    """
+
     def convert_to_text(self, file_path):
+        """
+        Extract text from an XLSX file.
+        """
         try:
-            """
-            Extract text from an XLSX file.
-            """
             df = pd.read_excel(file_path)
             return df.to_string()
         except Exception as e:
@@ -16,7 +22,7 @@ class XlsxConverter(BaseConverter):
 
 if __name__ == "__main__":
     converter = XlsxConverter()
-    path="./data/xlsx.xlsx"
-    text = converter.convert_to_text(path)
-    with open("./data/xlsx_text.txt", 'w') as file:
+    PATH = "./data/xlsx.xlsx"
+    text = converter.convert_to_text(PATH)
+    with open("./data/xlsx_text.txt", "w") as file:
         file.writelines(text)
