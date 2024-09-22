@@ -1,0 +1,21 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches:
+      - '*'
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: python linter
+        uses: sunnysid3up/python-linter@master
+        with:
+          source: "textify_docs"
+          mypy-options: "--ignore-missing-imports --show-error-codes"
+          isort-options: "-w 100"
